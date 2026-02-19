@@ -14,6 +14,7 @@ type Props = {
 
 export function MovieCard({ item }: Props) {
   const { t } = useLanguage();
+  const unoptimized = item.poster?.startsWith("/api/mock-image") ?? false;
 
   return (
     <motion.article
@@ -29,6 +30,7 @@ export function MovieCard({ item }: Props) {
               src={item.poster}
               alt={item.title}
               fill
+              unoptimized={unoptimized}
               className="object-cover transition duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
             />

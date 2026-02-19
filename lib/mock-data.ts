@@ -28,11 +28,11 @@ type MockItem = {
 const txt = (en: string, ru: string, uz: string): Localized => ({ en, ru, uz });
 
 function makePoster(title: string) {
-  return `https://dummyimage.com/600x900/111827/f9fafb.png&text=${encodeURIComponent(title)}`;
+  return `/api/mock-image?mode=poster&title=${encodeURIComponent(title)}`;
 }
 
 function makeBackdrop(title: string) {
-  return `https://dummyimage.com/1600x900/0b1020/e5e7eb.png&text=${encodeURIComponent(title)}`;
+  return `/api/mock-image?mode=backdrop&title=${encodeURIComponent(title)}`;
 }
 
 const MOCK_ITEMS: MockItem[] = [

@@ -128,11 +128,20 @@ export function TitleDetailClient({ id, mediaType }: Props) {
     );
   }
 
+  const backdropUnoptimized = item.backdrop?.startsWith("/api/mock-image") ?? false;
+
   return (
     <div className="space-y-8">
       <section className="relative overflow-hidden rounded-3xl border border-white/10">
         {item.backdrop ? (
-          <Image src={item.backdrop} alt={item.title} width={1600} height={900} className="h-[320px] w-full object-cover md:h-[420px]" />
+          <Image
+            src={item.backdrop}
+            alt={item.title}
+            width={1600}
+            height={900}
+            unoptimized={backdropUnoptimized}
+            className="h-[320px] w-full object-cover md:h-[420px]"
+          />
         ) : (
           <div className="skeleton h-[320px] w-full md:h-[420px]" />
         )}
