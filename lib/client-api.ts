@@ -24,8 +24,22 @@ export async function fetchApi<T>(url: string, init?: RequestInit): Promise<T> {
   }
   const res = await fetch(url, { ...init, headers });
   if (!res.ok) {
-    const payload = await res.json().catch(() => ({}));
-    throw new Error(payload?.message ?? `Request failed: ${res.status}`);
+    let message: string | null = null;
+    const clone = res.clone();
+    const payload = await res.json().catch(() => null);
+    if (payload && typeof payload === "object" && "message" in payload) {
+      const msg = (payload as { message?: unknown }).message;
+      if (typeof msg === "string" && msg.trim()) {
+        message = msg;
+      }
+    }
+    if (!message) {
+      const text = await clone.text().catch(() => "");
+      if (text.trim()) {
+        message = text.trim().slice(0, 200);
+      }
+    }
+    throw new Error(message ?? `Request failed: ${res.status}`);
   }
   return (await res.json()) as T;
 }

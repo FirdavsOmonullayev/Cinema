@@ -10,7 +10,8 @@ export async function GET(req: NextRequest) {
     const items = await getTrendingMovies(sort, lang);
     return NextResponse.json({ items });
   } catch (error) {
-    return NextResponse.json({ message: "Server error", error }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Server error";
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 

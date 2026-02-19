@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json({ items });
   } catch (error) {
-    return NextResponse.json({ message: "Server error", error }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Server error";
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 
@@ -39,7 +40,8 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json({ item });
   } catch (error) {
-    return NextResponse.json({ message: "Server error", error }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Server error";
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 

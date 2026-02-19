@@ -5,7 +5,7 @@ import { comparePassword, signToken } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const schema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email().transform((value) => value.toLowerCase()),
   password: z.string().min(6).max(100)
 });
 
@@ -36,7 +36,8 @@ export async function POST(req: NextRequest) {
       user: { id: user.id, email: user.email, name: user.name }
     });
   } catch (error) {
-    return NextResponse.json({ message: "Server error", error }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Server error";
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 

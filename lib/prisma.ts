@@ -1,5 +1,6 @@
 import Database from "better-sqlite3";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import crypto from "node:crypto";
 
@@ -23,14 +24,7 @@ function applySelect<T extends Record<string, unknown>>(row: T | undefined, sele
   return result;
 }
 
-const dbPath = toFilePath(process.env.DATABASE_URL ?? "file:./dev.db");
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
-
-const db = new Database(dbPath);
-db.pragma("journal_mode = WAL");
-
-db.exec(`
+const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
@@ -74,7 +68,61 @@ CREATE TABLE IF NOT EXISTS search_history (
   createdAt TEXT NOT NULL,
   userId TEXT NOT NULL
 );
-`);
+`;
+
+function ensureDirSafe(dir: string) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+function initDb() {
+  const requestedPath = toFilePath(process.env.DATABASE_URL ?? "file:./dev.db");
+  const candidates = [
+    requestedPath,
+    path.resolve(process.cwd(), ".data", "dev.db"),
+    path.resolve(os.tmpdir(), "global-cinema-platform", "dev.db"),
+    ":memory:"
+  ];
+
+  let lastError: unknown = null;
+
+  for (const candidate of candidates) {
+    try {
+      if (candidate !== ":memory:") {
+        ensureDirSafe(path.dirname(candidate));
+      }
+
+      const db = new Database(candidate);
+      try {
+        db.pragma("journal_mode = WAL");
+      } catch {
+        // WAL might fail on read-only filesystems; continue with default mode.
+      }
+      db.exec(SCHEMA_SQL);
+
+      if (candidate !== requestedPath) {
+        const fallbackLabel = candidate === ":memory:" ? "in-memory sqlite" : candidate;
+        console.warn(
+          `SQLite fallback in use (${fallbackLabel}). Original path failed: ${requestedPath}`
+        );
+      }
+
+      return db;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw new Error(`Unable to initialize sqlite database: ${getErrorMessage(lastError)}`);
+}
+
+const db = initDb();
 
 function now() {
   return new Date().toISOString();

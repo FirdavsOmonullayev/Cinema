@@ -18,7 +18,8 @@ export async function GET(req: NextRequest, { params }: Params) {
     const item = await getMovieDetail(mediaType as MediaType, params.id, lang);
     return NextResponse.json({ item });
   } catch (error) {
-    return NextResponse.json({ message: "Server error", error }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Server error";
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 
