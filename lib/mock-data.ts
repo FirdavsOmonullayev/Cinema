@@ -613,23 +613,23 @@ const MOCK_ITEMS: MockItem[] = [
   {
     id: "2303",
     mediaType: "tv",
-    title: txt("Kukhnya", "Кухня", "Oshxona"),
+    title: txt("Breaking Bad", "Breaking Bad", "Breaking Bad"),
     overview: txt(
-      "A famous Russian comedy series set in a luxury restaurant.",
-      "Популярный российский комедийный сериал про элитный ресторан.",
-      "Hashamatli restoran hayoti haqidagi mashhur rus komediya seriali."
+      "A chemistry teacher turns to crime and builds a dangerous empire.",
+      "Uchitel khimii vstupaet v mir prestupnosti i sozdaet opasnuyu imperiyu.",
+      "Kimyo o'qituvchisi jinoyat olamiga kirib, xavfli imperiya quradi."
     ),
-    year: "2012",
-    genres: ["Comedy"],
-    platform: "START",
-    imdbRating: "8.5",
-    imdbId: "tt2809770",
-    tmdbRating: 8.0,
-    runtime: "24 min",
-    studio: "Yellow, Black and White",
-    releaseDate: "2012-10-22",
-    trailerKey: null,
-    keywords: ["kitchen", "kukhnya", "russian", "comedy"]
+    year: "2008",
+    genres: ["Crime", "Drama"],
+    platform: "Netflix",
+    imdbRating: "9.5",
+    imdbId: "tt0903747",
+    tmdbRating: 8.9,
+    runtime: "47 min",
+    studio: "AMC",
+    releaseDate: "2008-01-20",
+    trailerKey: "HhesaQXLuRY",
+    keywords: ["breaking bad", "crime", "drama", "series", "netflix"]
   },
   {
     id: "2304",
