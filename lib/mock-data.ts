@@ -27,8 +27,15 @@ type MockItem = {
 
 const txt = (en: string, ru: string, uz: string): Localized => ({ en, ru, uz });
 
-function makePoster(title: string) {
-  return `/api/mock-image?mode=poster&title=${encodeURIComponent(title)}`;
+function makePoster(title: string, imdbId: string | null) {
+  const params = new URLSearchParams({
+    mode: "poster",
+    title
+  });
+  if (imdbId) {
+    params.set("imdbId", imdbId);
+  }
+  return `/api/mock-image?${params.toString()}`;
 }
 
 function makeBackdrop(title: string) {
@@ -742,7 +749,7 @@ function toDetail(item: MockItem, lang: AppLanguage): MovieDetail {
     mediaType: item.mediaType,
     title,
     overview: pick(item.overview, lang),
-    poster: makePoster(title),
+    poster: makePoster(title, item.imdbId),
     backdrop: makeBackdrop(title),
     year: item.year,
     genres: item.genres,

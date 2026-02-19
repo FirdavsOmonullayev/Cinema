@@ -1,5 +1,13 @@
 import { NextRequest } from "next/server";
 
+type OmdbResponse = {
+  Response?: "True" | "False";
+  Poster?: string;
+};
+
+const posterCache = new Map<string, string | null>();
+const DEFAULT_OMDB_KEY = "564727fa";
+
 function escapeXml(value: string) {
   return value
     .replaceAll("&", "&amp;")
@@ -14,9 +22,65 @@ function shorten(value: string, max = 42) {
   return `${value.slice(0, max - 1)}...`;
 }
 
+function getOmdbKey() {
+  const configured = process.env.OMDB_API_KEY?.trim();
+  if (configured && configured !== "your_omdb_api_key") {
+    return configured;
+  }
+  return DEFAULT_OMDB_KEY;
+}
+
+function isRealImdbId(value: string | null) {
+  if (!value) return false;
+  return /^tt\d+$/.test(value);
+}
+
+async function findPosterUrl(imdbId: string | null, title: string) {
+  const cacheKey = `${imdbId ?? ""}|${title.toLowerCase()}`;
+  if (posterCache.has(cacheKey)) {
+    return posterCache.get(cacheKey) ?? null;
+  }
+
+  try {
+    const params = new URLSearchParams({ apikey: getOmdbKey() });
+    if (isRealImdbId(imdbId)) {
+      params.set("i", imdbId as string);
+    } else {
+      params.set("t", title);
+    }
+
+    const res = await fetch(`https://www.omdbapi.com/?${params.toString()}`, {
+      next: { revalidate: 86400 }
+    });
+    if (!res.ok) {
+      posterCache.set(cacheKey, null);
+      return null;
+    }
+
+    const data = (await res.json()) as OmdbResponse;
+    const poster =
+      data.Response === "True" && data.Poster && data.Poster !== "N/A" ? data.Poster : null;
+
+    posterCache.set(cacheKey, poster);
+    return poster;
+  } catch {
+    posterCache.set(cacheKey, null);
+    return null;
+  }
+}
+
 export async function GET(req: NextRequest) {
   const mode = req.nextUrl.searchParams.get("mode") === "backdrop" ? "backdrop" : "poster";
   const rawTitle = req.nextUrl.searchParams.get("title")?.trim() || "Global Cinema";
+  const imdbId = req.nextUrl.searchParams.get("imdbId")?.trim() ?? null;
+
+  if (mode === "poster") {
+    const posterUrl = await findPosterUrl(imdbId, rawTitle);
+    if (posterUrl) {
+      return Response.redirect(posterUrl, 302);
+    }
+  }
+
   const title = escapeXml(shorten(rawTitle, mode === "backdrop" ? 64 : 36));
 
   const width = mode === "backdrop" ? 1600 : 600;
